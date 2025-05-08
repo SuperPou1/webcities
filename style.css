@@ -1,0 +1,29 @@
+html {
+    height: 100%;
+}
+body{
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+.gamecontainer {
+    height: 100%;
+    width: 80%;
+    overflow: hidden;
+    float: left;
+    
+}
+.menu {
+    background-color: bisque;
+    float: left;
+    width: 20%;
+    height: 100%;
+
+}
+.gamemap {
+    height: 10000px;
+    width: 10000px;
+    zoom: 1;
+    image-rendering: pixelated;
+    background: repeat url("tile.png");
+}
