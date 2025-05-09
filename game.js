@@ -49,18 +49,41 @@ function zoom(event){
     } 
 }
 function determinetile(event){
-    tileposx = (Math.floor(Number(event.offsetX)/20/Number(gamemap.style.zoom)))*20;
-    tileposy = (Math.floor(Number(event.offsetY)/10/Number(gamemap.style.zoom)))*10;
-    const newtile = document.createElement("div");
+    mapx = Number((event.pageX/Number(gamemap.style.zoom))-Number(gamemap.style.marginLeft.replace("px", "")))
+    mapy = Number((event.pageY/Number(gamemap.style.zoom))-Number(gamemap.style.marginTop.replace("px", "")))
+    
+    tilegridx = (Math.floor(mapx/20));
+    tilegridy = (Math.floor(mapy/10));
+    
+    if (((tilegridx%2 == 1) && (tilegridy%2 == 1))||((tilegridx%2 == 0) && (tilegridy%2 == 0))){
+        if (mapy - ((tilegridy+1)*10)>(mapx - (tilegridx*20))/-2) {
+            tileposx = (tilegridx-1)*20
+            tileposy = (tilegridy)*10
+        } else {
+            tileposx = (tilegridx-2)*20
+            tileposy = (tilegridy-1)*10
+        }
+    } else {
+        if (mapy - ((tilegridy)*10)>(mapx - (tilegridx*20))/2) {
+            tileposx = (tilegridx-2)*20
+            tileposy = (tilegridy)*10
+        } else {
+            tileposx = (tilegridx-1)*20
+            tileposy = (tilegridy-1)*10
+        }
+    }
+    
+
+    const newtile = document.createElement("img");
     newtile.style.width = "40px"
     newtile.style.height = "20px"
     newtile.style.position = "absolute"
-    newtile.style.marginLeft = `${tileposx}px`;
-    newtile.style.marginTop = `${tileposy+1}px`;
-    newtile.style.background = "repeat url('house0.png')";
+    newtile.style.marginLeft = `${tileposx-2.25}px`;
+    newtile.style.marginTop = `${tileposy}px`;
+    newtile.src = "house0.png";
     
     gamemap.appendChild(newtile);
-    console.log(tileposx+tileposy)
+    console.log(tileposx+" "+tileposy+" "+event.offsetX)
 }
 
 gamemap.addEventListener("contextmenu", (e) => {e.preventDefault()});
