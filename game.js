@@ -48,6 +48,7 @@ class placedTile {
         this.tile.style.userSelect = "none"
         placedtiles.push([id, image, sellprice, makesplacable, tilepos, tilegridpos, options])
         this.tile.id = placedtiles.length - 1
+        this.tile.style.zIndex = tileposy
         gamemap.appendChild(this.tile);
     }
 }
