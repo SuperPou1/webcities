@@ -12,25 +12,40 @@
         </div>
     </section>
     <section class="menu">
+        
         <h2 id="money">Looks like your browser doesn't support javascript.</h2>
+        <h5 id="income">Income: $0.00</h5>
+        <img class="pause" id="pause" src="pause.png" alt="" onclick="playpause()">
         <div class="timebar">
             <div class="time" id="timebar"></div>
             
         </div>
         <p id="day">Day: 1</p>
+        <div class="submenu">
         <hr>
         <h3>Services</h3>
         <input type="range">
         <hr>
-        Building
+        <h3>Statistics</h3>
+        <section class="stats">
+            <img src="elect.png" class="statimg"><div class="statbar" ><div class="statbarempty" id="electricity"></div></div><br>
+            <img src="water.png" class="statimg"><div class="statbar" ><div class="statbarempty" id="water"></div></div><br>
+            <img src="garbage.png" class="statimg"><div class="statbar" ><div class="statbarempty" id="garbage"></div></div><br>
+            <img src="morale.png" class="statimg"><div class="statbar" ><div class="statbarempty" id="morale"></div></div><br>
+        </section>
+        <hr>
+        <h3>Building</h3>
         <br>
         <button onclick="fillopts(0)">Zones</button>
         <button onclick="fillopts(1)">Roads</button>
         <button onclick="fillopts(2)">misc</button>
         <br>
-        <table id="types">
+        <div class="build">
+            <table id="types">
 
-        </table>
+            </table>
+        </div>
+        </div>
     </section>
 </body>
 <script src="game.js"></script>

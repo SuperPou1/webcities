@@ -1,11 +1,15 @@
 const gamemap = document.getElementById("gamemap");
 const moneytag = document.getElementById("money")
+const pause = document.getElementById("pause")
+const timebar = document.getElementById("timebar");
+const daydisplay = document.getElementById("day");
+const incomedisplay = document.getElementById("income")
 
 gamemap.style.zoom = 1
 
 
 var tiletypes = [
-    ["house0.png", 20, [], [1,2,3,4,6,7], "a residential house", 20, 1, 0],
+    ["house0.png", 20, [], [1,2,3,4,6,7], "a residential house", 20, 1, -9],
     ["road0.png", 50, [], [], "Road R", 40, 1, 0.20],
     ["road1.png", 50, [], [], "Road L", 40, 1, 0.20],
     ["road2.png", 200, [], [], "Upward turning road", 40, 1, 0.20],
@@ -20,6 +24,7 @@ var draginitialposx;
 var tileid;
 var placedtiles = [];
 var money = (50000).toFixed(2);
+var income = (0).toFixed(2);
 moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
 
 class TileTypeMenu {
@@ -99,8 +104,8 @@ function determinetile(event){
         
     }
     if (tiletypes[tileid][3].length != 0) {
-        tilewontfit = true
-        console.log("no compatible tile to place next to.")
+        //tilewontfit = true
+        console.log("no compatible tile to place next to - not implemented!")
     }
     if (!tilewontfit) {
         newtile = new placedTile(tileid, tiletypes[tileid][0], tiletypes[tileid][1], tiletypes[tileid][2], [tileposx, tileposy], [tilegridx, tilegridy], tiletypes[tileid][3], tiletypes[tileid][7])
@@ -171,6 +176,17 @@ function fillopts(id){
     }
 }
 
+function playpause(){
+    if (gameloop){
+        gameloop = false;
+        pause.src = "pause.png"
+        timebar.style.backgroundColor = "red"
+    } else {
+        gameloop = true;
+        pause.src = "play.png"
+        timebar.style.backgroundColor = "lightgreen"
+    }
+}
 
 gamemap.addEventListener("contextmenu", (e) => {e.preventDefault()});
 gamemap.addEventListener("mousedown", startdragging, false);
@@ -180,28 +196,43 @@ gamemap.addEventListener("wheel", zoom, false);
 gamemap.addEventListener("click", determinetile, false)
 
 var time = 0;
-var gameloop = true;
-const timebar = document.getElementById("timebar");
-const daydisplay = document.getElementById("day");
+var gameloop = false;
+
 var day = 0;
 
 const timer = ms => new Promise(res => setTimeout(res, ms))
 
 
 async function load () {
-    while (gameloop){
+    while (true){
         await timer(1000);
-        time++;
-        timebar.style.width = `${(((time%10)/10)*100)+10}%`
-        if (day<Math.ceil((time/10)+0.1)) {
-            for (let i = 0; i < placedtiles.length; i++) {
-                money = (money - placedtiles[i][7]).toFixed(2);
+        if (gameloop)
+        {
             
+            time++;
+            timebar.style.width = `${(((time%10)/10)*100)+10}%`
+            if (day<Math.ceil((time/10)+0.1)) {
+                income = 0;
+                for (let i = 0; i < placedtiles.length; i++) {
+                    income = (income + placedtiles[i][7]);
+                    
+                
+                }
+                money = (money - income).toFixed(2);
+            }
+            
+            day = Math.ceil((time/10)+0.1)
+            daydisplay.innerHTML = `Day: ${day}`
+            moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+            incomedisplay.innerHTML = `Income: $${(-income).toFixed(2)}`
+            if (income<0){
+                incomedisplay.style.color = "lightgreen"
+            } else if (income>0) {
+                incomedisplay.style.color = "red"
+            } else {
+                incomedisplay.style.color = "white"
             }
         }
-        day = Math.ceil((time/10)+0.1)
-        daydisplay.innerHTML = `Day: ${day}`
-        moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
     }
 }
 load();

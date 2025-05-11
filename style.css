@@ -5,6 +5,7 @@ body{
     margin: 0;
     height: 100%;
     overflow: hidden;
+    color: white;
 }
 .gamecontainer {
     height: 100%;
@@ -14,18 +15,20 @@ body{
     
 }
 .menu {
-    background-color: bisque;
+    background-color: #28292d;
     float: right;
     width: 200px;
     height: 100%;
     position: relative;
     z-index: 10000000000000;
     padding: 10px;
-    overflow: scroll;
     text-align: center;
+    padding-bottom: 10%;
+    overflow: hidden;
 
 
 }
+
 .gamemap {
     height: 10000px;
     width: 10000px;
@@ -47,10 +50,55 @@ button {
 .timebar {
     background-color: gray;
     height: 20px;
-    width: 100%;
+    width: 79%;
+    float: left;
+    margin-top: 10px;
+    border: solid 1px black;
 }
 .time {
     height: 100%;
     width: 10%;
-    background-color: green;
+    background-color: red;
+}
+.build {
+    overflow: scroll;
+    height: 300px;
+    border: solid 1px black;
+}
+.pause {
+    float: left;
+}
+.statbar {
+    background-image: linear-gradient(to right, #fb0d08, #fbf208, #48f108);
+    height: 10px;
+    width: 79%;
+    margin-top: 12px;
+    float: right;
+    border: solid 1px black;
+}
+.statbarempty {
+    height: 100%;
+    width: 10%;
+    background-color: gray;
+    float: right;
+}
+.statimg {
+    clear: both;
+}
+hr {
+    width: 100%;
+    clear: both;
+}
+h5 {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 10px;
+}
+h2 {
+    margin-bottom: 0;
+}
+.submenu {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 80%;
 }
