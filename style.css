@@ -102,3 +102,9 @@ h2 {
     overflow-x: hidden;
     height: 80%;
 }
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

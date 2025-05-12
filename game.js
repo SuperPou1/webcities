@@ -7,16 +7,33 @@ const incomedisplay = document.getElementById("income")
 
 gamemap.style.zoom = 1
 
+/*
+Tiletype properties:
+0 - tile image
+1 - default tile sell price
+2 - unused
+3 - which tiletypes the tile can be placed next to (all if empty)
+4 - tile display name (for the menu)
+5 - tile cost
+6 - tile height, in tiles (1 tile = 20 pixels)
+7 - tile upkeep cost (negative is income)
+8 - tile category in the menu
+*/
 
 var tiletypes = [
-    ["house0.png", 20, [], [1,2,3,4,6,7], "a residential house", 20, 1, -9],
-    ["road0.png", 50, [], [], "Road R", 40, 1, 0.20],
-    ["road1.png", 50, [], [], "Road L", 40, 1, 0.20],
-    ["road2.png", 200, [], [], "Upward turning road", 40, 1, 0.20],
-    ["road3.png", 200, [], [], "Downward turning road", 40, 1, 0.20],
-    ["talltiles.png", 500, [], [], "some skyscrapers", 130, 2, 0],
-    ["road4.png", 200, [], [], "Leftward turning road", 40, 1, 0.20],
-    ["road5.png", 200, [], [], "Rightward turning road", 40, 1, 0.20],
+    ["house0.png", 20, [], [1,2,3,4,6,7,8,9,10,11,12], "a residential house", 20, 1, -9, 0],
+    ["road0.png", 50, [], [], "Road R", 40, 1, 0.20, 1],
+    ["road1.png", 50, [], [], "Road L", 40, 1, 0.20, 1],
+    ["road2.png", 200, [], [], "Upward turning road", 40, 1, 0.20, 1],
+    ["road3.png", 200, [], [], "Downward turning road", 40, 1, 0.20, 1],
+    ["talltiles.png", 500, [], [], "some skyscrapers", 130, 2, 0, 0],
+    ["road4.png", 200, [], [], "Leftward turning road", 40, 1, 0.20, 1],
+    ["road5.png", 200, [], [], "Rightward turning road", 40, 1, 0.20, 1],
+    ["road6.png", 200, [], [], "4-way Intersection", 40, 1, 0.20, 1],
+    ["road7.png", 200, [], [], "T road South-East", 40, 1, 0.20, 1],
+    ["road8.png", 200, [], [], "T road North-West", 40, 1, 0.20, 1],
+    ["road9.png", 200, [], [], "T road North-East", 40, 1, 0.20, 1],
+    ["road10.png", 200, [], [], "T road South-West", 40, 1, 0.20, 1],
 ]
 
 var dragging = false;
@@ -59,7 +76,6 @@ class placedTile {
         this.tile.style.marginLeft = `${tilepos[0]}px`;
         this.tile.style.marginTop = `${tilepos[1]-((tiletypes[id][6]-1)*20)}px`;
         this.tile.draggable = false
-        this.tile.style.userSelect = "none"
         placedtiles.push([id, image, sellprice, makesplacable, tilepos, tilegridpos, options, upkeep])
         this.tile.id = placedtiles.length - 1
         this.tile.style.zIndex = tileposy
@@ -95,29 +111,49 @@ function determinetile(event){
         }
     }
     tilewontfit = false;
-    for (let i = 0; i < placedtiles.length; i++) {
-        if (placedtiles[i][4][0] == tileposx && placedtiles[i][4][1] == tileposy){
-            tilewontfit = true;
-            console.log("detected another tile!")
+    
+    
+    if (tiletypes[tileid][3].length != 0) {
+        if (placedtiles.length == 0) {
+            console.log("no tiles yet, no way there is a compatible tile!")
             
         }
-        
+        tilewontfit = true
+        console.log("tile has special requirements")
+        for (let i = 0; i < placedtiles.length; i++) {
+            for (let j = 0; j < tiletypes[tileid][3].length; j++){
+                if (tiletypes[tileid][3][j] == placedtiles[i][0]){
+                    if ((placedtiles[i][4][0] == tileposx - 20 || placedtiles[i][4][0] == tileposx + 20) && (placedtiles[i][4][1] == tileposy - 10 || placedtiles[i][4][1] == tileposy + 10)){
+                        console.log("hey! tile compatible!")
+                        tilewontfit = false
+                    }
+                }
+            }
+        }
+    } else {
+        tilewontfit = false;
     }
-    if (tiletypes[tileid][3].length != 0) {
-        //tilewontfit = true
-        console.log("no compatible tile to place next to - not implemented!")
+    for (let i = 0; i < placedtiles.length; i++) {
+        if (placedtiles[i][4][0] == tileposx && placedtiles[i][4][1] == tileposy){
+            console.log("detected another tile!")
+            tilewontfit = true;
+        } 
+        
     }
     if (!tilewontfit) {
         newtile = new placedTile(tileid, tiletypes[tileid][0], tiletypes[tileid][1], tiletypes[tileid][2], [tileposx, tileposy], [tilegridx, tilegridy], tiletypes[tileid][3], tiletypes[tileid][7])
         money = (money - tiletypes[tileid][5]).toFixed(2)
         moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+        updateincome();
     }
+        
     
 }
 
 function startdragging(event){
     if (event.button == 2 || event.button == 1){    
         dragging = true;
+        gamemap.style.cursor = "all-scroll"
         draginitialposx = event.pageX;
         draginitialposy = event.pageY;
         initialmarginx = Number(gamemap.style.marginLeft.replace("px", ""))
@@ -145,6 +181,7 @@ function drag(event){
 }
 function stopdragging(){
     dragging = false;
+    gamemap.style.cursor = "unset"
 }
 
 function zoom(event){
@@ -163,16 +200,11 @@ function zoom(event){
 function fillopts(id){
     const row = document.getElementById("types");
     row.innerHTML = "";
-    if (id == 0){
-        new TileTypeMenu(0)
-        new TileTypeMenu(5)
-    } else if (id == 1) {
-        new TileTypeMenu(1)
-        new TileTypeMenu(2)
-        new TileTypeMenu(3)
-        new TileTypeMenu(4)
-        new TileTypeMenu(6)
-        new TileTypeMenu(7)
+    for (let i = 0; i < tiletypes.length; i++) {
+        if (tiletypes[i][8] == id){
+            new TileTypeMenu(i)
+        }
+    
     }
 }
 
@@ -186,6 +218,24 @@ function playpause(){
         pause.src = "play.png"
         timebar.style.backgroundColor = "lightgreen"
     }
+}
+
+function updateincome(){
+    income = 0;
+    for (let i = 0; i < placedtiles.length; i++) {
+        income = (income + placedtiles[i][7]);
+        
+    
+    }
+    incomedisplay.innerHTML = `Income: $${(-income).toFixed(2)}`
+    if (income<0){
+        incomedisplay.style.color = "lightgreen"
+    } else if (income>0) {
+        incomedisplay.style.color = "red"
+    } else {
+        incomedisplay.style.color = "white"
+    }
+
 }
 
 gamemap.addEventListener("contextmenu", (e) => {e.preventDefault()});
@@ -212,26 +262,14 @@ async function load () {
             time++;
             timebar.style.width = `${(((time%10)/10)*100)+10}%`
             if (day<Math.ceil((time/10)+0.1)) {
-                income = 0;
-                for (let i = 0; i < placedtiles.length; i++) {
-                    income = (income + placedtiles[i][7]);
-                    
+                updateincome();
                 
-                }
-                money = (money - income).toFixed(2);
             }
-            
+            money = (money - income/10).toFixed(2);
             day = Math.ceil((time/10)+0.1)
             daydisplay.innerHTML = `Day: ${day}`
             moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
-            incomedisplay.innerHTML = `Income: $${(-income).toFixed(2)}`
-            if (income<0){
-                incomedisplay.style.color = "lightgreen"
-            } else if (income>0) {
-                incomedisplay.style.color = "red"
-            } else {
-                incomedisplay.style.color = "white"
-            }
+            
         }
     }
 }
