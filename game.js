@@ -11,7 +11,7 @@ gamemap.style.zoom = 1
 Tiletype properties:
 0 - tile image
 1 - default tile sell price
-2 - unused
+2 - tile options (not added yet)
 3 - which tiletypes the tile can be placed next to (all if empty)
 4 - tile display name (for the menu)
 5 - tile cost
@@ -22,27 +22,27 @@ Tiletype properties:
 
 var tiletypes = [
     ["house0.png", 20, [], [1,2,3,4,6,7,8,9,10,11,12], "a residential house", 20, 1, -9, 0],
-    ["road0.png", 50, [], [], "Road R", 40, 1, 0.20, 1],
-    ["road1.png", 50, [], [], "Road L", 40, 1, 0.20, 1],
-    ["road2.png", 200, [], [], "Upward turning road", 40, 1, 0.20, 1],
-    ["road3.png", 200, [], [], "Downward turning road", 40, 1, 0.20, 1],
+    ["road0.png", 20, [], [], "Road R", 40, 1, 0.20, 1],
+    ["road1.png", 20, [], [], "Road L", 40, 1, 0.20, 1],
+    ["road2.png", 20, [], [], "Upward turning road", 40, 1, 0.20, 1],
+    ["road3.png", 20, [], [], "Downward turning road", 40, 1, 0.20, 1],
     ["talltiles.png", 500, [], [], "some skyscrapers", 130, 2, 0, 0],
-    ["road4.png", 200, [], [], "Leftward turning road", 40, 1, 0.20, 1],
-    ["road5.png", 200, [], [], "Rightward turning road", 40, 1, 0.20, 1],
-    ["road6.png", 200, [], [], "4-way Intersection", 40, 1, 0.20, 1],
-    ["road7.png", 200, [], [], "T road South-East", 40, 1, 0.20, 1],
-    ["road8.png", 200, [], [], "T road North-West", 40, 1, 0.20, 1],
-    ["road9.png", 200, [], [], "T road North-East", 40, 1, 0.20, 1],
-    ["road10.png", 200, [], [], "T road South-West", 40, 1, 0.20, 1],
+    ["road4.png", 20, [], [], "Leftward turning road", 40, 1, 0.20, 1],
+    ["road5.png", 20, [], [], "Rightward turning road", 40, 1, 0.20, 1],
+    ["road6.png", 20, [], [], "4-way Intersection", 40, 1, 0.20, 1],
+    ["road7.png", 20, [], [], "T road South-East", 40, 1, 0.20, 1],
+    ["road8.png", 20, [], [], "T road North-West", 40, 1, 0.20, 1],
+    ["road9.png", 20, [], [], "T road North-East", 40, 1, 0.20, 1],
+    ["road10.png", 20, [], [], "T road South-West", 40, 1, 0.20, 1],
 ]
 
 var dragging = false;
 var draginitialposx;
 var tileid;
 var placedtiles = [];
-var money = (50000).toFixed(2);
-var income = (0).toFixed(2);
-moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+var money = 50000
+var income = 0
+moneytag.innerHTML = `$${money.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
 
 class TileTypeMenu {
     constructor(id)
@@ -53,7 +53,7 @@ class TileTypeMenu {
         this.cell.colSpan = 3
         this.row.setAttribute("onclick", `tileid = ${id}`)
         this.image = document.createElement("img")
-        this.image.src = tiletypes[id][0]
+        this.image.src = "assets/"+tiletypes[id][0]
         this.image.style.marginRight = "10px"
         this.cell.appendChild(this.image)
         this.desc = document.createTextNode(tiletypes[id][4])
@@ -67,19 +67,29 @@ class TileTypeMenu {
 }
 
 class placedTile {
-    constructor(id, image, sellprice, makesplacable, tilepos, tilegridpos, options, upkeep){
+    constructor(id, tilepos, tilegridpos){
+        this.type = id
+        if (placedtiles.length > 0){
+            this.uid = placedtiles[placedtiles.length - 1].uid + 1
+        } else {
+            this.uid = 0
+        }
+        this.sellprice = tiletypes[id][1]
+        this.tilepos = tilepos
+        this.tilegridpos = tilegridpos
+        this.options = tiletypes[id][1]
+        this.upkeep = tiletypes[id][7]
         this.tile = document.createElement("div");
-        this.tile.style.background = `url("${image}")`;
+        this.tile.style.background = `url("assets/${tiletypes[id][0]}")`;
         this.tile.style.width = "40px"
         this.tile.style.height = `${tiletypes[id][6]*20}px`
         this.tile.style.position = "absolute"
         this.tile.style.marginLeft = `${tilepos[0]}px`;
         this.tile.style.marginTop = `${tilepos[1]-((tiletypes[id][6]-1)*20)}px`;
         this.tile.draggable = false
-        placedtiles.push([id, image, sellprice, makesplacable, tilepos, tilegridpos, options, upkeep])
-        this.tile.id = placedtiles.length - 1
         this.tile.style.zIndex = tileposy
         gamemap.appendChild(this.tile);
+        placedtiles.push(this)
     }
 }
 
@@ -122,8 +132,8 @@ function determinetile(event){
         console.log("tile has special requirements")
         for (let i = 0; i < placedtiles.length; i++) {
             for (let j = 0; j < tiletypes[tileid][3].length; j++){
-                if (tiletypes[tileid][3][j] == placedtiles[i][0]){
-                    if ((placedtiles[i][4][0] == tileposx - 20 || placedtiles[i][4][0] == tileposx + 20) && (placedtiles[i][4][1] == tileposy - 10 || placedtiles[i][4][1] == tileposy + 10)){
+                if (tiletypes[tileid][3][j] == placedtiles[i].type){
+                    if ((placedtiles[i].tilepos[0] == tileposx - 20 || placedtiles[i].tilepos[0] == tileposx + 20) && (placedtiles[i].tilepos[1] == tileposy - 10 || placedtiles[i].tilepos[1] == tileposy + 10)){
                         console.log("hey! tile compatible!")
                         tilewontfit = false
                     }
@@ -134,16 +144,16 @@ function determinetile(event){
         tilewontfit = false;
     }
     for (let i = 0; i < placedtiles.length; i++) {
-        if (placedtiles[i][4][0] == tileposx && placedtiles[i][4][1] == tileposy){
+        if (placedtiles[i].tilepos[0] == tileposx && placedtiles[i].tilepos[1] == tileposy){
             console.log("detected another tile!")
             tilewontfit = true;
+            deletetile(placedtiles[i].uid)
         } 
         
     }
     if (!tilewontfit) {
-        newtile = new placedTile(tileid, tiletypes[tileid][0], tiletypes[tileid][1], tiletypes[tileid][2], [tileposx, tileposy], [tilegridx, tilegridy], tiletypes[tileid][3], tiletypes[tileid][7])
-        money = (money - tiletypes[tileid][5]).toFixed(2)
-        moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+        newtile = new placedTile(tileid, [tileposx, tileposy], [tilegridx, tilegridy])
+        money = (money - tiletypes[tileid][5])
         updateincome();
     }
         
@@ -185,12 +195,22 @@ function stopdragging(){
 }
 
 function zoom(event){
-    
-    newscale = Number(gamemap.style.zoom) + (Number(event.deltaY)/1000*-1)
+    initialmarginx = Number(gamemap.style.marginLeft.replace("px", ""))
+    initialmarginy = Number(gamemap.style.marginTop.replace("px", ""))
     if (Number(event.deltaY) < 0){
         newscale = Number(gamemap.style.zoom) + 1
+        gamemap.style.marginLeft = `${initialmarginx-((Number(event.pageX/(newscale-1)))/newscale)}px`
+        gamemap.style.marginTop = `${initialmarginy-((Number(event.pageY/(newscale-1)))/newscale)}px`
     } else {
         newscale = Number(gamemap.style.zoom) - 1
+        gamemap.style.marginLeft = `${initialmarginx+((Number(event.pageX/(newscale+1)))/newscale)}px`
+        if (initialmarginx+((Number(event.pageX/(newscale+1)))/newscale)>0 && newscale >= 1) {
+            gamemap.style.marginLeft = "0px"
+        }
+        gamemap.style.marginTop = `${initialmarginy+((Number(event.pageY/(newscale+1)))/newscale)}px`
+        if (initialmarginy+((Number(event.pageY/(newscale+1)))/newscale)>0 && newscale >= 1) {
+            gamemap.style.marginTop = "0px"
+        }
     }
     if (newscale >= 1) {
         gamemap.style.zoom = newscale
@@ -223,7 +243,7 @@ function playpause(){
 function updateincome(){
     income = 0;
     for (let i = 0; i < placedtiles.length; i++) {
-        income = (income + placedtiles[i][7]);
+        income = (income + placedtiles[i].upkeep);
         
     
     }
@@ -235,8 +255,22 @@ function updateincome(){
     } else {
         incomedisplay.style.color = "white"
     }
+    moneytag.innerHTML = `$${money.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
 
 }
+
+function deletetile(uid){
+    for (let i = 0; i < placedtiles.length; i++) {
+        if (placedtiles[i].uid == uid) {
+            currenttile = i
+        }
+    }
+    placedtiles[currenttile].tile.remove()
+    money = (money + placedtiles[currenttile].sellprice)
+    placedtiles.splice(currenttile, 1)
+    updateincome();
+}
+
 
 gamemap.addEventListener("contextmenu", (e) => {e.preventDefault()});
 gamemap.addEventListener("mousedown", startdragging, false);
@@ -265,10 +299,10 @@ async function load () {
                 updateincome();
                 
             }
-            money = (money - income/10).toFixed(2);
+            money = (money - income/10);
             day = Math.ceil((time/10)+0.1)
             daydisplay.innerHTML = `Day: ${day}`
-            moneytag.innerHTML = `$${money.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+            updateincome()
             
         }
     }
