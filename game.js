@@ -231,11 +231,11 @@ function fillopts(id){
 function playpause(){
     if (gameloop){
         gameloop = false;
-        pause.src = "pause.png"
+        pause.src = "assets/pause.png"
         timebar.style.backgroundColor = "red"
     } else {
         gameloop = true;
-        pause.src = "play.png"
+        pause.src = "assets/play.png"
         timebar.style.backgroundColor = "lightgreen"
     }
 }
